@@ -7,7 +7,7 @@ import org.junit.After;
 /** 
 * HbaseUtils Tester.
 * 
-* @author <Authors name> 
+* @author Meowcle~
 * @since <pre>07/12/2017</pre> 
 * @version 1.0 
 */ 

@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 /** 
 * HdfsUtils Tester.
 * 
-* @author <Authors name> 
+* @author Meowcle~
 * @since <pre>07/14/2017</pre> 
 * @version 1.0 
 */ 
