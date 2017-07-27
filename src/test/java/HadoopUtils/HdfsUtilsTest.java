@@ -1,5 +1,6 @@
 package HadoopUtils; 
 
+import HadoopUtils.utils.HdfsUtils;
 import org.junit.Test;
 import org.junit.Before; 
 import org.junit.After;

@@ -1,6 +1,7 @@
 package HadoopUtils;
 
-import org.junit.Test; 
+import HadoopUtils.utils.HbaseUtils;
+import org.junit.Test;
 import org.junit.Before; 
 import org.junit.After; 
 
@@ -21,6 +22,26 @@ public class HbaseUtilsTest {
 
     @After
     public void after() throws Exception {
+    }
+
+    /**
+     *
+     * Method: listTable()
+     *
+     */
+    @Test
+    public void testListTable() throws Exception {
+        hbaseUtils.listTable();
+    }
+
+    /**
+     *
+     * Method: listTableNames()
+     *
+     */
+    @Test
+    public void testListTableNames() throws Exception {
+        hbaseUtils.listTableNames();
     }
 
     /**
@@ -55,6 +76,16 @@ public class HbaseUtilsTest {
     }
 
     /**
+     *
+     * Method: getRowkeyList()
+     *
+     */
+    @Test
+    public void getRowkeyList() throws Exception {
+        hbaseUtils.getRowkeyList("blog2017");
+    }
+
+    /**
     *
     * Method: getResult(String tableName, String rowKey)
     *
@@ -71,7 +102,7 @@ public class HbaseUtilsTest {
     */
     @Test
     public void testGetResultScannTableName() throws Exception {
-        hbaseUtils.getResultScann("blog2");
+        hbaseUtils.getResultScann("blog2017");
     }
 
     /**

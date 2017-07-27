@@ -1,14 +1,11 @@
-package HadoopUtils;
+package HadoopUtils.utils;
 
 /**
  * Created by Meowcle~ on 2017/7/12.
  */
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -44,6 +41,41 @@ public class HbaseUtils {
         }
     }
 
+    public static void createNameSpace(String nameSpace)
+            throws Exception {
+        HBaseAdmin admin = new HBaseAdmin(conf);
+        NamespaceDescriptor namespaceDescriptor = NamespaceDescriptor.create(nameSpace).build();
+        admin.createNamespace(namespaceDescriptor);
+        System.out.println("create namespace Success!");
+        admin.close();
+    }
+
+    /**
+     *
+     * 列出命名空间下的表
+     */
+    public static void listTable()
+            throws Exception {
+        HBaseAdmin admin = new HBaseAdmin(conf);
+        HTableDescriptor[] tablesDes = admin.listTables();
+        for (int i = 0; i < tablesDes.length; i++){
+            System.out.println(tablesDes[i].getNameAsString());
+        }
+        admin.close();
+    }
+
+    /**
+     *
+     * 列出命名空间下的表
+     */
+    public static String[] listTableNames()
+            throws Exception {
+        HBaseAdmin admin = new HBaseAdmin(conf);
+        String[] tablesNames = admin.getTableNames();
+        admin.close();
+        return tablesNames;
+    }
+
     /**
      *
      * 创建表
@@ -61,6 +93,7 @@ public class HbaseUtils {
             admin.createTable(desc);
             System.out.println("create table Success!");
         }
+        admin.close();
     }
 
     /**
@@ -83,6 +116,7 @@ public class HbaseUtils {
             admin.createTable(desc);
             System.out.println("create table Success!");
         }
+        admin.close();
     }
 
     /**
@@ -107,6 +141,7 @@ public class HbaseUtils {
             admin.createTable(desc);
             System.out.println("create table Success!");
         }
+        admin.close();
     }
 
     /**
@@ -123,6 +158,7 @@ public class HbaseUtils {
         } else {
             creatTable(tableName);
         }
+        admin.close();
     }
 
     /**
@@ -141,6 +177,7 @@ public class HbaseUtils {
         } else {
             creatTable(tableName, family);
         }
+        admin.close();
     }
 
     /**
@@ -159,6 +196,7 @@ public class HbaseUtils {
         } else {
             creatTable(tableName, families);
         }
+        admin.close();
     }
 
     /**
@@ -209,6 +247,39 @@ public class HbaseUtils {
         }
         table.put(put);
         System.out.println("add data Success!");
+        admin.close();
+    }
+
+    /**
+     *
+     * 获取表的rowkey列表
+     *
+     * @tableName 表名
+     */
+    public static ArrayList<String> getRowkeyList(String tableName) throws IOException {
+        ArrayList<String> rowkeyList = new ArrayList<String>();
+        HBaseAdmin admin = new HBaseAdmin(conf);
+        if (!admin.tableExists(Bytes.toBytes(tableName))) {
+            System.err.println("table " + tableName + " DOES NOT exist");
+            System.exit(1);
+        }
+        Scan scan = new Scan();
+        ResultScanner rs = null;
+        HTable table = new HTable(conf, Bytes.toBytes(tableName));
+        try {
+            rs = table.getScanner(scan);
+            for (Result r : rs) {
+                for (KeyValue kv : r.list()) {
+                    if (!rowkeyList.contains(Bytes.toString(kv.getRow())))
+                        rowkeyList.add(Bytes.toString(kv.getRow()));
+                }
+            }
+        }
+        finally {
+            admin.close();
+            rs.close();
+            return rowkeyList;
+        }
     }
 
     /**
@@ -230,6 +301,7 @@ public class HbaseUtils {
         HTable table = new HTable(conf, Bytes.toBytes(tableName));// 获取表
         Result result = table.get(get);
         OutputWithoutRow(result);
+        admin.close();
         return result;
     }
 
@@ -252,6 +324,7 @@ public class HbaseUtils {
             rs = table.getScanner(scan);
             OutputWithRow(rs);
         } finally {
+            admin.close();
             rs.close();
         }
     }
@@ -282,6 +355,7 @@ public class HbaseUtils {
             rs = table.getScanner(scan);
             OutputWithRow(rs);
         } finally {
+            admin.close();
             rs.close();
         }
     }
@@ -306,6 +380,7 @@ public class HbaseUtils {
         get.addColumn(Bytes.toBytes(familyName), Bytes.toBytes(columnName)); // 获取指定列族和列修饰符对应的列
         Result result = table.get(get);
         OutputWithoutRow(result);
+        admin.close();
     }
 
     /**
@@ -336,6 +411,7 @@ public class HbaseUtils {
                 Bytes.toBytes(value));
         table.put(put);
         System.out.println("update table Success!");
+        admin.close();
     }
 
     /**
@@ -363,6 +439,7 @@ public class HbaseUtils {
         get.setMaxVersions(5);
         Result result = table.get(get);
         OutputWithoutRow(result);
+        admin.close();
     }
 
     /**
@@ -414,6 +491,7 @@ public class HbaseUtils {
                 Bytes.toBytes(columnName));
         table.delete(deleteColumn);
         System.out.println(falilyName + ":" + columnName + "is deleted!");
+        admin.close();
     }
 
     /**
@@ -435,6 +513,7 @@ public class HbaseUtils {
         Delete deleteAll = new Delete(Bytes.toBytes(rowKey));
         table.delete(deleteAll);
         System.out.println("all columns are deleted!");
+        admin.close();
     }
 
     /**
@@ -452,6 +531,7 @@ public class HbaseUtils {
         admin.disableTable(tableName);
         admin.deleteTable(tableName);
         System.out.println(tableName + " is deleted!");
+        admin.close();
     }
 
     /**
@@ -494,9 +574,14 @@ public class HbaseUtils {
     }
 
     public static void main(String[] args) throws Exception {
+        String namespace = "testNameSpace";
+        String tableName = namespace + ":blog2018";
+
+        //createNameSpace(namespace);
+
+        deleteTable(tableName);
 
         // 创建表
-        String tableName = "blog2017";
         String[] families = { "article", "author" };
         creatTable(tableName, families);
 
@@ -508,55 +593,57 @@ public class HbaseUtils {
                 "Hadoop,HBase,NoSQL" };
         String[] column2 = { "name", "nickname" };
         String[] value2 = { "nicholas", "lee" };
-        addData("rowkey1", "blog2017", column1, value1, column2, value2);
-        addData("rowkey2", "blog2017", column1, value1, column2, value2);
-        addData("rowkey3", "blog2017", column1, value1, column2, value2);
+        addData("rowkey1", tableName, column1, value1, column2, value2);
+        addData("rowkey2", tableName, column1, value1, column2, value2);
+        addData("rowkey3", tableName, column1, value1, column2, value2);
 
         // 遍历查询
-        getResultScann("blog2017");
+        getResultScann(tableName);
         // 根据row key范围遍历查询
-        getResultScann("blog2017", "rowkey4", "rowkey5");
+        getResultScann(tableName, "rowkey1", "rowkey2");
 
         // 查询
-        getResult("blog2017", "rowkey1");
+        getResult(tableName, "rowkey1");
 
         // 查询某一列的值
-        getResultByColumn("blog2017", "rowkey1", "author", "name");
+        getResultByColumn(tableName, "rowkey1", "author", "name");
 
         // 更新列
-        updateTable("blog2017", "rowkey1", "author", "name", "bin");
+        updateTable(tableName, "rowkey1", "author", "name", "bin");
 
         // 查询某一列的值
-        getResultByColumn("blog2017", "rowkey1", "author", "name");
+        getResultByColumn(tableName, "rowkey1", "author", "name");
 
         // 查询某列的多版本
-        getResultByVersion("blog2017", "rowkey1", "author", "name");
+        getResultByVersion(tableName, "rowkey1", "author", "name");
 
         // 初始化表
         initTable(tableName, families);
 
         // 重新为表添加数据
-        addData("rowkey1", "blog2017", column1, value1, column2, value2);
-        addData("rowkey2", "blog2017", column1, value1, column2, value2);
-        addData("rowkey3", "blog2017", column1, value1, column2, value2);
+        addData("rowkey1", tableName, column1, value1, column2, value2);
+        addData("rowkey2", tableName, column1, value1, column2, value2);
+        addData("rowkey3", tableName, column1, value1, column2, value2);
 
         // 遍历查询
-        getResultScann("blog2017");
+        getResultScann(tableName);
 
         // 删除一条记录
-        deleteRecordByRowKey("blog2017", "rowkey1");
-        getResultScann("blog2017");
+        deleteRecordByRowKey(tableName, "rowkey1");
+        getResultScann(tableName);
 
         // 删除一列
-        deleteColumn("blog2017", "rowkey1", "author", "nickname");
-        getResultScann("blog2017");
+        deleteColumn(tableName, "rowkey1", "author", "nickname");
+        getResultScann(tableName);
 
         // 删除所有列
-        deleteAllColumn("blog2017", "rowkey1");
-        getResultScann("blog2017");
+        deleteAllColumn(tableName, "rowkey1");
+        getResultScann(tableName);
 
         // 删除表
-        deleteTable("blog2017");
+        //deleteTable(tableName);
+
+        System.out.println("@@@@@@@@@@@@");
 
     }
 }

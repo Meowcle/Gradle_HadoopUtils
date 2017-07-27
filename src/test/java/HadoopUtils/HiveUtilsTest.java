@@ -1,13 +1,14 @@
 package HadoopUtils; 
 
-import org.junit.Test; 
+import HadoopUtils.utils.HiveUtils;
+import org.junit.Test;
 import org.junit.Before; 
 import org.junit.After;
 
 import java.sql.Connection;
 import java.sql.Statement;
 
-import static HadoopUtils.HiveUtils.getConn;
+import static HadoopUtils.utils.HiveUtils.getConn;
 import static org.junit.Assert.assertEquals;
 
 /** 

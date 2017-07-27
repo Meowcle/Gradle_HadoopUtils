@@ -1,4 +1,4 @@
-package HadoopUtils;
+package HadoopUtils.utils;
 
 /**
  * Created by Meowcle~ on 2017/7/14.
