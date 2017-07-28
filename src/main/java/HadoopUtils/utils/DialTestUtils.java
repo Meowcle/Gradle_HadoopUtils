@@ -31,7 +31,7 @@ public class DialTestUtils {
         }
         JSONArray ja = JSONArray.fromObject(tableList);
         JSONObject jo = new JSONObject();
-        jo.put("data", ja);
+        jo.put("table", ja);
         System.out.println(jo.toString());
         return jo;
     }
@@ -66,9 +66,11 @@ public class DialTestUtils {
         } catch (TimeoutException e) {
             System.out.println("Dialtest failed for Timeout Exception.\n");
             dtr.setStatus(DialTestStatus.FAIL.getCode());
+            dtr.setCost(-1);
         } catch (Exception e) {
             System.out.println("Dialtest failed.\n");
             dtr.setStatus(DialTestStatus.FAIL.getCode());
+            dtr.setCost(-1);
         }
         finally {
             dtr.setTableName(tableName);
@@ -76,6 +78,45 @@ public class DialTestUtils {
             exec.shutdown();
             return dtr;
 
+        }
+    }
+
+    public static long DialAttempt (String tableName, int type) throws Exception {
+        if (type != 1 && type != 0)
+            return -2;
+        DialTestResult dtr = new DialTestResult();
+        final ExecutorService exec = Executors.newFixedThreadPool(1);
+        Callable<DialTestResult> task = new Callable<DialTestResult>() {
+            @Override
+            public DialTestResult call() throws Exception {
+                return DialTest(tableName);
+            }
+        };
+        try {
+            Future<DialTestResult> future = exec.submit(task);
+            dtr = future.get(1000 * 5, TimeUnit.MILLISECONDS); //set timeout to 5000ms
+            dtr.setStatus(DialTestStatus.SUCCESS.getCode());
+        } catch (TimeoutException e) {
+            System.out.println("Dialtest failed for Timeout Exception.\n");
+            dtr.setStatus(DialTestStatus.TIMEOUT.getCode());
+            dtr.setCost(-1);
+        } catch (Exception e) {
+            System.out.println("Dialtest failed.\n");
+            dtr.setStatus(DialTestStatus.FAIL.getCode());
+            dtr.setCost(-1);
+        }
+        finally {
+            dtr.setTableName(tableName);
+            System.out.println("===========================================\n");
+            exec.shutdown();
+            if (type == 0) {
+                System.out.println(dtr.getStatus());
+                return dtr.getStatus();
+            }
+            else {
+                System.out.println(dtr.getCost());
+                return dtr.getCost();
+            }
         }
     }
 
@@ -92,5 +133,10 @@ public class DialTestUtils {
         System.out.println("Dialtest finished. \n Time starts: "
                 + formatter.format(begin) + "\n Time ends: " + formatter.format(end) + "\n Time spends: " + cost + "ms\n");
         return dtr;
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        TableList();
     }
 }

@@ -6,7 +6,7 @@ package HadoopUtils.infrastructure;
 public enum DialTestStatus {
     SUCCESS(1, "success"),
     FAIL(0, "fail"),
-    UNKNOWN(-1, "unknown");
+    TIMEOUT(-1, "timeout");
 
 
     // 定义私有变量
@@ -34,7 +34,7 @@ public enum DialTestStatus {
                 return status;
             }
         }
-        return DialTestStatus.UNKNOWN;
+        return DialTestStatus.TIMEOUT;
     }
 
     public static String getNameByCode(Integer code) {
@@ -43,7 +43,7 @@ public enum DialTestStatus {
                 return status.getName();
             }
         }
-        return DialTestStatus.UNKNOWN.getName();
+        return DialTestStatus.TIMEOUT.getName();
     }
 }
 
